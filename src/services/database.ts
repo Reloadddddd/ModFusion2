@@ -6,7 +6,7 @@ class LocalDatabase {
   private readonly ADMIN_CODE = 'mc557wr25jsbl84c3ol';
 
   constructor() {
-    this.initializeTestUsers();
+    // Pas d'initialisation automatique
   }
 
   // Récupérer tous les utilisateurs
@@ -23,34 +23,6 @@ class LocalDatabase {
   // Vérifier si un code admin est valide
   isValidAdminCode(code: string): boolean {
     return code === this.ADMIN_CODE;
-  }
-
-  // Initialiser des utilisateurs de test
-  private initializeTestUsers(): void {
-    const users = this.getUsers();
-    if (users.length === 0) {
-      const testUsers: User[] = [
-        {
-          id: 'admin-1',
-          email: 'admin@test.com',
-          firstName: 'Admin',
-          lastName: 'Test',
-          password: 'admin',
-          createdAt: new Date().toISOString(),
-          role: 'admin',
-        },
-        {
-          id: 'user-1',
-          email: 'user@test.com',
-          firstName: 'Utilisateur',
-          lastName: 'Test',
-          password: 'user',
-          createdAt: new Date().toISOString(),
-          role: 'Utilisateur enregistré',
-        },
-      ];
-      this.saveUsers(testUsers);
-    }
   }
 
   // Créer un nouvel utilisateur
@@ -72,7 +44,10 @@ class LocalDatabase {
       role: isAdmin ? 'admin' : 'Utilisateur enregistré',
     };
 
-    delete (newUser as any).adminCode;
+    // Nettoyer la propriété adminCode si présente
+    if ('adminCode' in newUser) {
+      delete (newUser as any).adminCode;
+    }
 
     users.push(newUser);
     this.saveUsers(users);
@@ -98,7 +73,7 @@ class LocalDatabase {
     return user || null;
   }
 
-  // Définir l'utilisateur actuel
+  // Définir l'utilisateur actuel dans le localStorage
   setCurrentUser(user: User): void {
     localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(user));
     window.dispatchEvent(new Event('localUserChange'));
@@ -116,7 +91,7 @@ class LocalDatabase {
     window.dispatchEvent(new Event('localUserChange'));
   }
 
-  // Mettre à jour un utilisateur
+  // Mettre à jour un utilisateur existant
   updateUser(userId: string, updates: Partial<User>): User | null {
     const users = this.getUsers();
     const userIndex = users.findIndex(u => u.id === userId);
@@ -134,7 +109,7 @@ class LocalDatabase {
     return users[userIndex];
   }
 
-  // Supprimer un utilisateur
+  // Supprimer un utilisateur par ID
   deleteUser(userId: string): boolean {
     const users = this.getUsers();
     const filteredUsers = users.filter(u => u.id !== userId);
@@ -151,7 +126,7 @@ class LocalDatabase {
     return true;
   }
 
-  // Promouvoir un utilisateur en admin avec un code
+  // Promouvoir un utilisateur en admin (avec code admin)
   promoteToAdmin(userId: string, adminCode: string): boolean {
     if (!this.isValidAdminCode(adminCode)) return false;
 
@@ -159,7 +134,7 @@ class LocalDatabase {
     return !!updatedUser;
   }
 
-  // Promouvoir par ID sans code (par un admin)
+  // Promouvoir un utilisateur en admin (sans code, par un admin)
   promoteToAdminById(userId: string): boolean {
     const updatedUser = this.updateUser(userId, { role: 'admin' });
     return !!updatedUser;
@@ -173,14 +148,13 @@ class LocalDatabase {
 
   // Générer un ID unique
   private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 
-  // Réinitialiser la base
+  // Réinitialiser la base de données locale
   reset(): void {
     localStorage.removeItem(this.USERS_KEY);
     localStorage.removeItem(this.CURRENT_USER_KEY);
-    this.initializeTestUsers();
   }
 }
 
