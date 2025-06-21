@@ -7,7 +7,7 @@ export interface User {
   createdAt: string;
   lastLogin?: string;
   avatar?: string;
-  role: 'user' | 'admin';
+  role: 'Utilisateur enregistré' | 'admin';
   adminCode?: string;
 }
 
