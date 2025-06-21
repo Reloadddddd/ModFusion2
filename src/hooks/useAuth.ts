@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; 
 import { User, LoginCredentials, RegisterData } from '../types/user';
 import { database } from '../services/database';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null); // Email en attente de code
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const updateUserFromStorage = () => {
@@ -23,25 +23,20 @@ export const useAuth = () => {
     };
   }, []);
 
-  // Étape 1 : connexion avec email + mdp, puis envoi du code par email
   const login = async (
     credentials: LoginCredentials
   ): Promise<{ success: boolean; requiresVerification?: boolean; error?: string }> => {
     try {
-      // Vérifie email + mdp
       const authenticatedUser = database.authenticateUser(
         credentials.email,
         credentials.password
       );
 
       if (authenticatedUser) {
-        // Envoie un code de vérification par email (simulé)
         const codeSent = database.sendVerificationCode(credentials.email);
 
         if (codeSent) {
-          // Stocke l'email en attente de vérification
           setPendingEmail(credentials.email);
-          // Retourne succès mais nécessite la vérification du code
           return { success: true, requiresVerification: true };
         } else {
           return { success: false, error: 'Impossible d\'envoyer le code de vérification' };
@@ -54,7 +49,6 @@ export const useAuth = () => {
     }
   };
 
-  // Étape 2 : validation du code envoyé par email
   const verifyCode = async (
     code: string
   ): Promise<{ success: boolean; error?: string }> => {
@@ -63,16 +57,14 @@ export const useAuth = () => {
     }
 
     try {
-      // Vérifie si le code est valide
       const valid = database.verifyCode(pendingEmail, code);
 
       if (valid) {
-        // Récupère l'utilisateur et finalise la connexion
         const authenticatedUser = database.getUserByEmail(pendingEmail);
         if (authenticatedUser) {
           database.setCurrentUser(authenticatedUser);
           setUser(authenticatedUser);
-          setPendingEmail(null); // Reset de l'email en attente
+          setPendingEmail(null);
           return { success: true };
         }
         return { success: false, error: 'Utilisateur non trouvé après vérification' };
@@ -84,7 +76,6 @@ export const useAuth = () => {
     }
   };
 
-  // Inscription standard
   const register = async (
     data: RegisterData
   ): Promise<{ success: boolean; error?: string }> => {
@@ -113,13 +104,11 @@ export const useAuth = () => {
     }
   };
 
-  // Déconnexion
   const logout = () => {
     database.logout();
     setUser(null);
   };
 
-  // Mise à jour du profil
   const updateProfile = async (
     updates: Partial<User>
   ): Promise<{ success: boolean; error?: string }> => {
@@ -139,7 +128,6 @@ export const useAuth = () => {
     }
   };
 
-  // Promotion administrateur
   const promoteToAdmin = async (
     adminCode: string
   ): Promise<{ success: boolean; error?: string }> => {
@@ -159,6 +147,22 @@ export const useAuth = () => {
     }
   };
 
+  // --- Nouvelle fonction pour supprimer le compte ---
+  const deleteAccount = async (): Promise<{ success: boolean; error?: string }> => {
+    if (!user) return { success: false, error: 'Utilisateur non connecté' };
+
+    try {
+      const success = database.deleteUser(user.id);
+      if (success) {
+        logout(); // Déconnexion après suppression
+        return { success: true };
+      }
+      return { success: false, error: 'Erreur lors de la suppression du compte' };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Erreur inconnue' };
+    }
+  };
+
   return {
     user,
     loading,
@@ -168,6 +172,7 @@ export const useAuth = () => {
     logout,
     updateProfile,
     promoteToAdmin,
+    deleteAccount,  // <- exporte la fonction suppression
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
   };
