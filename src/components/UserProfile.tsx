@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { User, Mail, Calendar, Clock, Edit3, Save, X, Shield, Key } from 'lucide-react';
+import { User, Mail, Calendar, Clock, Edit3, Save, X, Shield, Key, Trash2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 export const UserProfile: React.FC = () => {
-  const { user, updateProfile, promoteToAdmin } = useAuth();
+  const { user, updateProfile, promoteToAdmin, deleteAccount } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showAdminPromotion, setShowAdminPromotion] = useState(false);
   const [adminCode, setAdminCode] = useState('');
@@ -14,6 +14,8 @@ export const UserProfile: React.FC = () => {
   });
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!user) return null;
 
@@ -65,13 +67,33 @@ export const UserProfile: React.FC = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      return;
+    }
+    setIsDeleting(true);
+    setMessage(null);
+
+    const result = await deleteAccount();
+    if (result.success) {
+      // Ici, tu peux rediriger ou déconnecter l'utilisateur, selon ton app
+      setMessage({ type: 'success', text: 'Compte supprimé avec succès.' });
+    } else {
+      setMessage({ type: 'error', text: result.error || 'Erreur lors de la suppression du compte' });
+    }
+
+    setIsDeleting(false);
+    setConfirmDelete(false);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -84,7 +106,8 @@ export const UserProfile: React.FC = () => {
             <div className="flex items-center space-x-6">
               <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white text-2xl font-bold">
-                  {user.firstName.charAt(0).toUpperCase()}{user.lastName.charAt(0).toUpperCase()}
+                  {user.firstName.charAt(0).toUpperCase()}
+                  {user.lastName.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
@@ -101,7 +124,7 @@ export const UserProfile: React.FC = () => {
                 <p className="text-gray-400 text-lg">{user.email}</p>
               </div>
             </div>
-            
+
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
@@ -134,11 +157,13 @@ export const UserProfile: React.FC = () => {
 
         {/* Message */}
         {message && (
-          <div className={`mx-8 mt-6 p-4 rounded-lg ${
-            message.type === 'success' 
-              ? 'bg-green-500/20 border border-green-500/50 text-green-400' 
-              : 'bg-red-500/20 border border-red-500/50 text-red-400'
-          }`}>
+          <div
+            className={`mx-8 mt-6 p-4 rounded-lg ${
+              message.type === 'success'
+                ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+                : 'bg-red-500/20 border border-red-500/50 text-red-400'
+            }`}
+          >
             {message.text}
           </div>
         )}
@@ -149,12 +174,10 @@ export const UserProfile: React.FC = () => {
             {/* Informations personnelles */}
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-white mb-4">Informations personnelles</h2>
-              
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Prénom
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Prénom</label>
                   {isEditing ? (
                     <input
                       type="text"
@@ -171,9 +194,7 @@ export const UserProfile: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Nom
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Nom</label>
                   {isEditing ? (
                     <input
                       type="text"
@@ -190,9 +211,7 @@ export const UserProfile: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Adresse email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Adresse email</label>
                   {isEditing ? (
                     <input
                       type="email"
@@ -259,12 +278,10 @@ export const UserProfile: React.FC = () => {
             {/* Informations du compte */}
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-white mb-4">Informations du compte</h2>
-              
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Rôle
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Rôle</label>
                   <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
                     <Shield className={`w-5 h-5 ${user.role === 'admin' ? 'text-red-400' : 'text-gray-400'}`} />
                     <span className={`font-medium ${user.role === 'admin' ? 'text-red-400' : 'text-white'}`}>
@@ -274,18 +291,14 @@ export const UserProfile: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    ID utilisateur
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">ID utilisateur</label>
                   <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
                     <span className="text-gray-400 font-mono text-sm">{user.id}</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Membre depuis
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Membre depuis</label>
                   <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
                     <Calendar className="w-5 h-5 text-gray-400" />
                     <span className="text-white">{formatDate(user.createdAt)}</span>
@@ -294,9 +307,7 @@ export const UserProfile: React.FC = () => {
 
                 {user.lastLogin && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Dernière connexion
-                    </label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Dernière connexion</label>
                     <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
                       <Clock className="w-5 h-5 text-gray-400" />
                       <span className="text-white">{formatDate(user.lastLogin)}</span>
@@ -318,6 +329,39 @@ export const UserProfile: React.FC = () => {
                     <div className="text-sm text-gray-300">Mods favoris</div>
                   </div>
                 </div>
+              </div>
+
+              {/* Supprimer le compte */}
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-white mb-4">Supprimer le compte</h3>
+                {!confirmDelete ? (
+                  <button
+                    onClick={handleDeleteAccount}
+                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Supprimer mon compte</span>
+                  </button>
+                ) : (
+                  <div className="space-x-4">
+                    <span className="text-red-400 font-medium">Êtes-vous sûr ? Cette action est irréversible.</span>
+                    <button
+                      onClick={handleDeleteAccount}
+                      className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Suppression...' : 'Confirmer la suppression'}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                      disabled={isDeleting}
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
