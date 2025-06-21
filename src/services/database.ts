@@ -5,6 +5,10 @@ class LocalDatabase {
   private readonly CURRENT_USER_KEY = 'modfusion_current_user';
   private readonly ADMIN_CODE = 'mc557wr25jsbl84c3ol';
 
+  constructor() {
+    this.initializeTestUsers();
+  }
+
   // Récupérer tous les utilisateurs
   getUsers(): User[] {
     const users = localStorage.getItem(this.USERS_KEY);
@@ -21,12 +25,43 @@ class LocalDatabase {
     return code === this.ADMIN_CODE;
   }
 
-  // Créer un nouvel utilisateur
-  createUser(userData: Omit<User, 'id' | 'createdAt' | 'role'>): User {
+  // Initialiser des utilisateurs test (optionnel)
+  private initializeTestUsers(): void {
     const users = this.getUsers();
-    
-    // Vérifier si l'email existe déjà
-    if (users.some(user => user.email === userData.email)) {
+    if (users.length === 0) {
+      const testUsers: User[] = [
+        {
+          id: 'admin-1',
+          email: 'admin@test.com',
+          firstName: 'Admin',
+          lastName: 'Test',
+          password: 'admin',
+          createdAt: new Date().toISOString(),
+          role: 'admin',
+        },
+        {
+          id: 'user-1',
+          email: 'user@test.com',
+          firstName: 'User',
+          lastName: 'Test',
+          password: 'user',
+          createdAt: new Date().toISOString(),
+          role: 'user',
+        },
+      ];
+      this.saveUsers(testUsers);
+    }
+  }
+
+  // Créer un nouvel utilisateur
+  createUser(userData: Omit<User, 'id' | 'createdAt' | 'role'> & { adminCode?: string }): User {
+    const users = this.getUsers();
+
+    // Nettoyer l'email
+    const emailNormalized = userData.email.trim().toLowerCase();
+
+    // Vérifier si l'email existe déjà (insensible à la casse)
+    if (users.some(user => user.email.trim().toLowerCase() === emailNormalized)) {
       throw new Error('Un compte avec cette adresse email existe déjà');
     }
 
@@ -35,38 +70,43 @@ class LocalDatabase {
 
     const newUser: User = {
       ...userData,
+      email: emailNormalized,
       id: this.generateId(),
       createdAt: new Date().toISOString(),
       role: isAdmin ? 'admin' : 'user',
     };
 
-    // Ne pas stocker le code admin dans la base de données
-    delete newUser.adminCode;
+    // Ne pas stocker le code admin
+    delete (newUser as any).adminCode;
 
     users.push(newUser);
     this.saveUsers(users);
-    
+
     return newUser;
   }
 
   // Authentifier un utilisateur
   authenticateUser(email: string, password: string): User | null {
     const users = this.getUsers();
-    const user = users.find(u => u.email === email && u.password === password);
-    
+    const emailNormalized = email.trim().toLowerCase();
+
+    const user = users.find(
+      u => u.email.trim().toLowerCase() === emailNormalized && u.password === password.trim()
+    );
+
     if (user) {
-      // Mettre à jour la dernière connexion
       user.lastLogin = new Date().toISOString();
       this.saveUsers(users);
-      this.setCurrentUser(user);
+      this.setCurrentUser(user); // déclenche l'événement
     }
-    
+
     return user || null;
   }
 
-  // Définir l'utilisateur actuel
+  // Définir l'utilisateur actuel et émettre l'événement
   setCurrentUser(user: User): void {
     localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(user));
+    window.dispatchEvent(new Event('localUserChange'));
   }
 
   // Récupérer l'utilisateur actuel
@@ -75,27 +115,28 @@ class LocalDatabase {
     return user ? JSON.parse(user) : null;
   }
 
-  // Déconnecter l'utilisateur
+  // Déconnecter l'utilisateur et émettre l'événement
   logout(): void {
     localStorage.removeItem(this.CURRENT_USER_KEY);
+    window.dispatchEvent(new Event('localUserChange'));
   }
 
   // Mettre à jour un utilisateur
   updateUser(userId: string, updates: Partial<User>): User | null {
     const users = this.getUsers();
     const userIndex = users.findIndex(u => u.id === userId);
-    
+
     if (userIndex === -1) return null;
-    
+
     users[userIndex] = { ...users[userIndex], ...updates };
     this.saveUsers(users);
-    
+
     // Mettre à jour l'utilisateur actuel si c'est lui qui est modifié
     const currentUser = this.getCurrentUser();
     if (currentUser && currentUser.id === userId) {
-      this.setCurrentUser(users[userIndex]);
+      this.setCurrentUser(users[userIndex]); // déclenche l'événement
     }
-    
+
     return users[userIndex];
   }
 
@@ -103,24 +144,24 @@ class LocalDatabase {
   deleteUser(userId: string): boolean {
     const users = this.getUsers();
     const filteredUsers = users.filter(u => u.id !== userId);
-    
+
     if (filteredUsers.length === users.length) return false;
-    
+
     this.saveUsers(filteredUsers);
-    
+
     // Déconnecter si c'est l'utilisateur actuel
     const currentUser = this.getCurrentUser();
     if (currentUser && currentUser.id === userId) {
-      this.logout();
+      this.logout(); // déclenche l'événement
     }
-    
+
     return true;
   }
 
   // Promouvoir un utilisateur en admin avec le code
   promoteToAdmin(userId: string, adminCode: string): boolean {
     if (!this.isValidAdminCode(adminCode)) return false;
-    
+
     const updatedUser = this.updateUser(userId, { role: 'admin' });
     return !!updatedUser;
   }
@@ -129,9 +170,9 @@ class LocalDatabase {
   promoteToAdminById(userId: string): boolean {
     const users = this.getUsers();
     const user = users.find(u => u.id === userId);
-    
+
     if (!user) return false;
-    
+
     const updatedUser = this.updateUser(userId, { role: 'admin' });
     return !!updatedUser;
   }
@@ -151,6 +192,7 @@ class LocalDatabase {
   reset(): void {
     localStorage.removeItem(this.USERS_KEY);
     localStorage.removeItem(this.CURRENT_USER_KEY);
+    this.initializeTestUsers();
   }
 }
 
