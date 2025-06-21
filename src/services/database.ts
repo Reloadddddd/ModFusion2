@@ -25,7 +25,7 @@ class LocalDatabase {
     return code === this.ADMIN_CODE;
   }
 
-  // Initialiser des utilisateurs test (optionnel)
+  // Initialiser des utilisateurs de test
   private initializeTestUsers(): void {
     const users = this.getUsers();
     if (users.length === 0) {
@@ -42,11 +42,11 @@ class LocalDatabase {
         {
           id: 'user-1',
           email: 'user@test.com',
-          firstName: 'User',
+          firstName: 'Utilisateur',
           lastName: 'Test',
           password: 'user',
           createdAt: new Date().toISOString(),
-          role: 'user',
+          role: 'Utilisateur enregistré',
         },
       ];
       this.saveUsers(testUsers);
@@ -56,16 +56,12 @@ class LocalDatabase {
   // Créer un nouvel utilisateur
   createUser(userData: Omit<User, 'id' | 'createdAt' | 'role'> & { adminCode?: string }): User {
     const users = this.getUsers();
-
-    // Nettoyer l'email
     const emailNormalized = userData.email.trim().toLowerCase();
 
-    // Vérifier si l'email existe déjà (insensible à la casse)
     if (users.some(user => user.email.trim().toLowerCase() === emailNormalized)) {
       throw new Error('Un compte avec cette adresse email existe déjà');
     }
 
-    // Déterminer le rôle basé sur le code admin
     const isAdmin = userData.adminCode && this.isValidAdminCode(userData.adminCode);
 
     const newUser: User = {
@@ -73,10 +69,9 @@ class LocalDatabase {
       email: emailNormalized,
       id: this.generateId(),
       createdAt: new Date().toISOString(),
-      role: isAdmin ? 'admin' : 'user',
+      role: isAdmin ? 'admin' : 'Utilisateur enregistré',
     };
 
-    // Ne pas stocker le code admin
     delete (newUser as any).adminCode;
 
     users.push(newUser);
@@ -97,13 +92,13 @@ class LocalDatabase {
     if (user) {
       user.lastLogin = new Date().toISOString();
       this.saveUsers(users);
-      this.setCurrentUser(user); // déclenche l'événement
+      this.setCurrentUser(user);
     }
 
     return user || null;
   }
 
-  // Définir l'utilisateur actuel et émettre l'événement
+  // Définir l'utilisateur actuel
   setCurrentUser(user: User): void {
     localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(user));
     window.dispatchEvent(new Event('localUserChange'));
@@ -115,7 +110,7 @@ class LocalDatabase {
     return user ? JSON.parse(user) : null;
   }
 
-  // Déconnecter l'utilisateur et émettre l'événement
+  // Déconnexion
   logout(): void {
     localStorage.removeItem(this.CURRENT_USER_KEY);
     window.dispatchEvent(new Event('localUserChange'));
@@ -131,10 +126,9 @@ class LocalDatabase {
     users[userIndex] = { ...users[userIndex], ...updates };
     this.saveUsers(users);
 
-    // Mettre à jour l'utilisateur actuel si c'est lui qui est modifié
     const currentUser = this.getCurrentUser();
     if (currentUser && currentUser.id === userId) {
-      this.setCurrentUser(users[userIndex]); // déclenche l'événement
+      this.setCurrentUser(users[userIndex]);
     }
 
     return users[userIndex];
@@ -149,16 +143,15 @@ class LocalDatabase {
 
     this.saveUsers(filteredUsers);
 
-    // Déconnecter si c'est l'utilisateur actuel
     const currentUser = this.getCurrentUser();
     if (currentUser && currentUser.id === userId) {
-      this.logout(); // déclenche l'événement
+      this.logout();
     }
 
     return true;
   }
 
-  // Promouvoir un utilisateur en admin avec le code
+  // Promouvoir un utilisateur en admin avec un code
   promoteToAdmin(userId: string, adminCode: string): boolean {
     if (!this.isValidAdminCode(adminCode)) return false;
 
@@ -166,20 +159,15 @@ class LocalDatabase {
     return !!updatedUser;
   }
 
-  // Promouvoir un utilisateur en admin par ID (pour les admins)
+  // Promouvoir par ID sans code (par un admin)
   promoteToAdminById(userId: string): boolean {
-    const users = this.getUsers();
-    const user = users.find(u => u.id === userId);
-
-    if (!user) return false;
-
     const updatedUser = this.updateUser(userId, { role: 'admin' });
     return !!updatedUser;
   }
 
-  // Rétrograder un admin en utilisateur normal
+  // Rétrograder un admin en utilisateur enregistré
   demoteFromAdmin(userId: string): boolean {
-    const updatedUser = this.updateUser(userId, { role: 'user' });
+    const updatedUser = this.updateUser(userId, { role: 'Utilisateur enregistré' });
     return !!updatedUser;
   }
 
@@ -188,7 +176,7 @@ class LocalDatabase {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
-  // Réinitialiser la base de données (pour le développement)
+  // Réinitialiser la base
   reset(): void {
     localStorage.removeItem(this.USERS_KEY);
     localStorage.removeItem(this.CURRENT_USER_KEY);
