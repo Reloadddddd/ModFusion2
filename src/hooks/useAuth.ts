@@ -7,40 +7,54 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Vérifier si un utilisateur est déjà connecté
-    const currentUser = database.getCurrentUser();
-    setUser(currentUser);
-    setLoading(false);
+    const updateUserFromStorage = () => {
+      const currentUser = database.getCurrentUser();
+      setUser(currentUser);
+      setLoading(false);
+    };
+
+    updateUserFromStorage();
+
+    window.addEventListener('localUserChange', updateUserFromStorage);
+
+    return () => {
+      window.removeEventListener('localUserChange', updateUserFromStorage);
+    };
   }, []);
 
-  const login = async (credentials: LoginCredentials): Promise<{ success: boolean; error?: string }> => {
+  const login = async (
+    credentials: LoginCredentials
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      setLoading(true);
-      const authenticatedUser = database.authenticateUser(credentials.email, credentials.password);
-      
+      const authenticatedUser = database.authenticateUser(
+        credentials.email,
+        credentials.password
+      );
+
       if (authenticatedUser) {
+        database.setCurrentUser(authenticatedUser);
         setUser(authenticatedUser);
         return { success: true };
-      } else {
-        return { success: false, error: 'Email ou mot de passe incorrect' };
       }
+
+      return { success: false, error: 'Email ou mot de passe incorrect' };
     } catch (error) {
-      return { success: false, error: 'Erreur lors de la connexion' };
-    } finally {
-      setLoading(false);
+      return {
+        success: false,
+        error: 'Erreur lors de la connexion',
+      };
     }
   };
 
-  const register = async (data: RegisterData): Promise<{ success: boolean; error?: string }> => {
+  const register = async (
+    data: RegisterData
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      setLoading(true);
-      
       if (data.password !== data.confirmPassword) {
-        return { success: false, error: 'Les mots de passe ne correspondent pas' };
-      }
-
-      if (data.password.length < 6) {
-        return { success: false, error: 'Le mot de passe doit contenir au moins 6 caractères' };
+        return {
+          success: false,
+          error: 'Les mots de passe ne correspondent pas',
+        };
       }
 
       const newUser = database.createUser({
@@ -51,12 +65,18 @@ export const useAuth = () => {
         adminCode: data.adminCode,
       });
 
+      database.setCurrentUser(newUser);
       setUser(newUser);
+
       return { success: true };
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erreur lors de l\'inscription' };
-    } finally {
-      setLoading(false);
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de l’inscription',
+      };
     }
   };
 
@@ -65,22 +85,34 @@ export const useAuth = () => {
     setUser(null);
   };
 
-  const updateProfile = async (updates: Partial<User>): Promise<{ success: boolean; error?: string }> => {
+  const updateProfile = async (
+    updates: Partial<User>
+  ): Promise<{ success: boolean; error?: string }> => {
     if (!user) return { success: false, error: 'Utilisateur non connecté' };
 
     try {
       const updatedUser = database.updateUser(user.id, updates);
       if (updatedUser) {
         setUser(updatedUser);
+        database.setCurrentUser(updatedUser);
         return { success: true };
       }
-      return { success: false, error: 'Erreur lors de la mise à jour' };
-    } catch (error) {
-      return { success: false, error: 'Erreur lors de la mise à jour du profil' };
+
+      return {
+        success: false,
+        error: 'Erreur lors de la mise à jour du profil',
+      };
+    } catch {
+      return {
+        success: false,
+        error: 'Erreur lors de la mise à jour du profil',
+      };
     }
   };
 
-  const promoteToAdmin = async (adminCode: string): Promise<{ success: boolean; error?: string }> => {
+  const promoteToAdmin = async (
+    adminCode: string
+  ): Promise<{ success: boolean; error?: string }> => {
     if (!user) return { success: false, error: 'Utilisateur non connecté' };
 
     try {
@@ -90,8 +122,9 @@ export const useAuth = () => {
         setUser(updatedUser);
         return { success: true };
       }
+
       return { success: false, error: 'Code administrateur invalide' };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Erreur lors de la promotion' };
     }
   };
