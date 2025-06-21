@@ -254,6 +254,22 @@ function App() {
                   </div>
                 </div>
               )}
+
+              {/* Comptes de test */}
+              <div className="mt-8 p-4 bg-blue-900/20 border border-blue-500/50 rounded-lg">
+                <h3 className="text-blue-400 font-semibold mb-2">Comptes de test disponibles :</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="text-blue-300">
+                    <strong>Admin :</strong> admin@test.com / admin
+                  </div>
+                  <div className="text-blue-300">
+                    <strong>Utilisateur :</strong> user@test.com / user
+                  </div>
+                </div>
+                <p className="text-blue-200 text-xs mt-2">
+                  Code admin pour promotion : mc557wr25jsbl84c3ol
+                </p>
+              </div>
             </div>
           </main>
         ) : currentView === 'profile' ? (
