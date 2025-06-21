@@ -18,7 +18,7 @@ import { useAuth } from './hooks/useAuth';
 import { AuthModal } from './components/AuthModal';
 import { UserMenu } from './components/UserMenu';
 import { UserProfile } from './components/UserProfile';
-import { AdminPanel } from './components/AdminPanel';
+import AdminPanel from './components/AdminPanel'; // Import par défaut corrigé
 
 function App() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -31,20 +31,14 @@ function App() {
     setIsAuthModalOpen(true);
   };
 
-  const handleProfileClick = () => {
-    setCurrentView('profile');
-  };
-
-  const handleAdminClick = () => {
-    setCurrentView('admin');
-  };
-
-  const handleBackToHome = () => {
-    setCurrentView('home');
-  };
+  const handleProfileClick = () => setCurrentView('profile');
+  const handleAdminClick = () => setCurrentView('admin');
+  const handleBackToHome = () => setCurrentView('home');
 
   const handleDeleteAccount = () => {
-    const confirmed = window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.");
+    const confirmed = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible."
+    );
     if (confirmed) {
       // Logique de suppression (API ou localStorage, etc.)
       console.log("Compte supprimé !");
@@ -86,13 +80,14 @@ function App() {
                   <button
                     onClick={handleBackToHome}
                     className="text-gray-300 hover:text-white transition-colors"
+                    aria-label="Retour à l'accueil"
                   >
                     <ArrowLeft className="w-6 h-6" />
                   </button>
                 )}
-                <div className="text-2xl font-bold text-white">ModFusion</div>
+                <div className="text-2xl font-bold text-white select-none">ModFusion</div>
                 {currentView === 'admin' && (
-                  <div className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-full">
+                  <div className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-full select-none">
                     <span className="text-red-400 text-sm font-medium">ADMIN</span>
                   </div>
                 )}
@@ -101,19 +96,34 @@ function App() {
               {/* Navigation */}
               {currentView !== 'admin' && (
                 <nav className="hidden md:flex items-center space-x-8">
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">À propos</a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Bibliothèque</a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Blog</a>
-                  <a href="#" className="bg-yellow-400 text-black px-3 py-1 rounded-md font-medium hover:bg-yellow-300 transition-colors">ModFusionPrime</a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Support</a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Servers</a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    À propos
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    Bibliothèque
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    Blog
+                  </a>
+                  <a
+                    href="#"
+                    className="bg-yellow-400 text-black px-3 py-1 rounded-md font-medium hover:bg-yellow-300 transition-colors"
+                  >
+                    ModFusionPrime
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    Support
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    Servers
+                  </a>
                 </nav>
               )}
 
               {/* Actions à droite */}
               <div className="hidden md:flex items-center space-x-4">
                 {currentView !== 'admin' && (
-                  <div className="flex items-center space-x-2 text-gray-300">
+                  <div className="flex items-center space-x-2 text-gray-300 select-none">
                     <Globe className="w-4 h-4" />
                     <span>Français</span>
                   </div>
@@ -123,6 +133,7 @@ function App() {
                     onClick={handleAdminClick}
                     className="flex items-center space-x-2 px-3 py-2 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 hover:text-red-300 rounded-lg transition-colors"
                     title="Panneau d'administration"
+                    aria-label="Panneau d'administration"
                   >
                     <Database className="w-4 h-4" />
                     <span className="hidden lg:block">Admin</span>
@@ -163,10 +174,12 @@ function App() {
             <div className="max-w-xl">
               <div className="space-y-4">
                 <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
-                  BOOSTEZ VOTRE<br />
+                  BOOSTEZ VOTRE
+                  <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
                     GAMEPLAY
-                  </span><br />
+                  </span>
+                  <br />
                   AVEC DES MODS
                 </h1>
                 <p className="text-base lg:text-lg text-gray-200 leading-relaxed">
@@ -176,16 +189,14 @@ function App() {
               </div>
 
               <div className="flex flex-col space-y-4 mt-6">
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-white font-medium">4.4/5</span>
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
+                    />
+                  ))}
+                  <span className="text-white font-medium ml-2">4.4/5</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <img
@@ -207,60 +218,26 @@ function App() {
                   <Monitor className="w-5 h-5 mr-2" />
                   Téléchargement gratuit
                 </button>
-                <button className="inline-flex items-center justify-center px-6 py-3 bg-gray-900/80 hover:bg-gray-800/80 text-white font-semibold rounded-lg border border-gray-600 transition-all duration-200 transform hover:scale-105 backdrop-blur-sm">
+                <
+                <button className="inline-flex items-center justify-center px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md">
                   <Play className="w-5 h-5 mr-2" />
-                  Comment ça marche
+                  Voir les mods
                 </button>
               </div>
-
-              {!isAuthenticated && (
-                <div className="mt-8 p-4 bg-gray-900/60 border border-gray-700 rounded-lg backdrop-blur-sm">
-                  <p className="text-gray-300 text-sm mb-3">
-                    Créez un compte pour accéder à tous nos mods et fonctionnalités exclusives !
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openAuthModal('register')}
-                      className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
-                    >
-                      S'inscrire gratuitement
-                    </button>
-                    <span className="text-gray-500">•</span>
-                    <button
-                      onClick={() => openAuthModal('login')}
-                      className="text-gray-400 hover:text-white text-sm transition-colors"
-                    >
-                      Déjà un compte ?
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </main>
         ) : currentView === 'profile' ? (
-          <main className="py-8">
-            <UserProfile onDeleteAccount={handleDeleteAccount} />
-          </main>
+          <UserProfile onDeleteAccount={handleDeleteAccount} />
         ) : (
-          <main className="py-8">
-            <AdminPanel />
-          </main>
+          <AdminPanel />
         )}
       </div>
 
-      {currentView === 'home' && (
-        <>
-          <div className="absolute top-20 right-20 w-6 h-6 bg-green-500 rounded-sm animate-bounce delay-100 shadow-lg opacity-60"></div>
-          <div className="absolute bottom-32 right-32 w-5 h-5 bg-blue-500 rounded-sm animate-bounce delay-300 shadow-lg opacity-60"></div>
-          <div className="absolute top-1/3 right-10 w-4 h-4 bg-amber-600 rounded-sm animate-pulse opacity-60"></div>
-          <div className="absolute bottom-20 left-20 w-4 h-4 bg-purple-600 rounded-sm animate-bounce delay-500 shadow-lg opacity-60"></div>
-        </>
-      )}
-
+      {/* Auth Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        initialMode={authModalMode}
+        mode={authModalMode}
       />
     </div>
   );
