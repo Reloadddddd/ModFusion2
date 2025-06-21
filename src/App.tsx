@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import {
-  Download,
-  Play,
-  Star,
-  Package,
-  Monitor,
-  Globe,
-  Menu,
   ArrowLeft,
   Database,
+  Globe,
+  Menu,
+  Monitor,
+  Play,
+  Star
 } from 'lucide-react';
 
 import { useAuth } from './hooks/useAuth';
@@ -36,12 +34,8 @@ function App() {
   const goHome = () => setCurrentView('home');
 
   const handleDeleteAccount = () => {
-    if (
-      window.confirm(
-        "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible."
-      )
-    ) {
-      // Ici, appeler API suppression compte
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.")) {
+      // Appel API pour suppression réelle
       console.log('Compte supprimé !');
       setCurrentView('home');
     }
@@ -57,7 +51,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Background image only on home */}
+      {/* Background uniquement sur la page d'accueil */}
       {currentView === 'home' && (
         <>
           <img
@@ -70,17 +64,13 @@ function App() {
         </>
       )}
 
-      {/* Header */}
+      {/* HEADER */}
       <header className="border-b border-gray-800/50 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               {(currentView === 'profile' || currentView === 'admin') && (
-                <button
-                  onClick={goHome}
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="Retour à l'accueil"
-                >
+                <button onClick={goHome} className="text-gray-300 hover:text-white transition-colors" aria-label="Retour">
                   <ArrowLeft className="w-6 h-6" />
                 </button>
               )}
@@ -132,10 +122,7 @@ function App() {
                 <UserMenu onProfileClick={goToProfile} />
               ) : (
                 <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => openAuthModal('login')}
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
+                  <button onClick={() => openAuthModal('login')} className="text-gray-300 hover:text-white transition-colors">
                     Connexion
                   </button>
                   <button
@@ -155,7 +142,7 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* MAIN */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
         {currentView === 'home' && (
           <section className="max-w-xl">
@@ -175,10 +162,7 @@ function App() {
             <div className="mt-6 flex items-center space-x-4">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
-                  />
+                  <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-600'}`} />
                 ))}
                 <span className="text-white font-medium ml-2">4.4/5</span>
               </div>
@@ -191,7 +175,7 @@ function App() {
                 <span className="text-white font-medium">Compatible Minecraft</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Package className="w-5 h-5 text-blue-500" />
+                <Monitor className="w-5 h-5 text-blue-500" />
                 <span className="text-white font-medium">21 000+</span>
                 <span className="text-gray-300">téléchargements</span>
               </div>
@@ -219,7 +203,7 @@ function App() {
         )}
       </main>
 
-      {/* Auth Modal */}
+      {/* Modal Auth */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
