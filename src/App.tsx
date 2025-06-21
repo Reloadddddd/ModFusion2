@@ -19,23 +19,28 @@ import { UserMenu } from './components/UserMenu';
 import { UserProfile } from './components/UserProfile';
 import { AdminPanel } from './components/AdminPanel';
 
-type View = 'home' | 'profile' | 'admin';
-type AuthMode = 'login' | 'register';
-
 function App() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalMode, setAuthModalMode] = useState<AuthMode>('login');
-  const [currentView, setCurrentView] = useState<View>('home');
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+  const [currentView, setCurrentView] = useState<'home' | 'profile' | 'admin'>('home');
 
-  const openAuthModal = (mode: AuthMode) => {
+  const openAuthModal = (mode: 'login' | 'register') => {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
   };
 
-  const handleProfileClick = () => setCurrentView('profile');
-  const handleAdminClick = () => setCurrentView('admin');
-  const handleBackToHome = () => setCurrentView('home');
+  const handleProfileClick = () => {
+    setCurrentView('profile');
+  };
+
+  const handleAdminClick = () => {
+    setCurrentView('admin');
+  };
+
+  const handleBackToHome = () => {
+    setCurrentView('home');
+  };
 
   if (loading) {
     return (
@@ -49,15 +54,15 @@ function App() {
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Background Image - only on home */}
       {currentView === 'home' && (
-        <>
+        <div className="absolute inset-0 z-0">
           <img 
             src="/image.png" 
             alt="Minecraft background" 
-            className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
+            className="w-full h-full object-cover opacity-30"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-0"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 z-0"></div>
-        </>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
+        </div>
       )}
 
       {/* Content */}
@@ -66,22 +71,21 @@ function App() {
         <header className="border-b border-gray-800/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              {/* Logo and Back Button */}
+              {/* Logo */}
               <div className="flex items-center space-x-4">
                 {(currentView === 'profile' || currentView === 'admin') && (
                   <button
                     onClick={handleBackToHome}
                     className="text-gray-300 hover:text-white transition-colors"
-                    aria-label="Retour à l'accueil"
                   >
                     <ArrowLeft className="w-6 h-6" />
                   </button>
                 )}
-                <div className="text-2xl font-bold text-white select-none">
+                <div className="text-2xl font-bold text-white">
                   ModFusion
                 </div>
                 {currentView === 'admin' && (
-                  <div className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-full select-none">
+                  <div className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-full">
                     <span className="text-red-400 text-sm font-medium">ADMIN</span>
                   </div>
                 )}
@@ -115,25 +119,24 @@ function App() {
               <div className="hidden md:flex items-center space-x-4">
                 {/* Language selector - Hidden in admin view */}
                 {currentView !== 'admin' && (
-                  <div className="flex items-center space-x-2 text-gray-300 select-none">
+                  <div className="flex items-center space-x-2 text-gray-300">
                     <Globe className="w-4 h-4" />
                     <span>Français</span>
                   </div>
                 )}
-
+                
                 {/* Admin Button - Only visible for admins */}
                 {isAdmin && (
                   <button
                     onClick={handleAdminClick}
                     className="flex items-center space-x-2 px-3 py-2 bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30 hover:text-red-300 rounded-lg transition-colors"
                     title="Panneau d'administration"
-                    aria-label="Panneau d'administration"
                   >
                     <Database className="w-4 h-4" />
                     <span className="hidden lg:block">Admin</span>
                   </button>
                 )}
-
+                
                 {isAuthenticated ? (
                   <UserMenu onProfileClick={handleProfileClick} />
                 ) : (
@@ -179,12 +182,13 @@ function App() {
                 </h1>
                 
                 <p className="text-base lg:text-lg text-gray-200 leading-relaxed">
-                  Votre jeu ne sera plus jamais le même grâce aux modifications, skins, optimisations...
+                  Votre jeu ne sera plus jamais le même grâce aux modifications, 
+                  skins, optimisations...
                 </p>
               </div>
 
               {/* Stats/Info */}
-              <div className="flex flex-col space-y-4 mt-6">
+              <div className="flex flex-col space-y-4">
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
@@ -204,13 +208,13 @@ function App() {
                     alt="Minecraft logo" 
                     className="w-6 h-6 object-contain"
                   />
-                  <span className="text-white font-medium select-none">Compatible Minecraft</span>
+                  <span className="text-white font-medium">Compatible Minecraft</span>
                 </div>
 
                 <div className="flex items-center space-x-2">
                   <Package className="w-5 h-5 text-blue-500" />
-                  <span className="text-white font-medium select-none">21 000+</span>
-                  <span className="text-gray-300 select-none">téléchargements</span>
+                  <span className="text-white font-medium">21 000+</span>
+                  <span className="text-gray-300">téléchargements</span>
                 </div>
               </div>
 
@@ -240,7 +244,7 @@ function App() {
                     >
                       S'inscrire gratuitement
                     </button>
-                    <span className="text-gray-500 select-none">•</span>
+                    <span className="text-gray-500">•</span>
                     <button
                       onClick={() => openAuthModal('login')}
                       className="text-gray-400 hover:text-white text-sm transition-colors"
@@ -250,30 +254,14 @@ function App() {
                   </div>
                 </div>
               )}
-
-              {/* Comptes de test */}
-              <div className="mt-8 p-4 bg-blue-900/20 border border-blue-500/50 rounded-lg">
-                <h3 className="text-blue-400 font-semibold mb-2 select-none">Comptes de test disponibles :</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="text-blue-300 select-none">
-                    <strong>Admin :</strong> admin@test.com / admin
-                  </div>
-                  <div className="text-blue-300 select-none">
-                    <strong>Utilisateur :</strong> user@test.com / user
-                  </div>
-                </div>
-                <p className="text-blue-200 text-xs mt-2 select-all">
-                  Code admin pour promotion : mc557wr25jsbl84c3ol
-                </p>
-              </div>
             </div>
           </main>
         ) : currentView === 'profile' ? (
-          <main className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <main className="py-8">
             <UserProfile />
           </main>
         ) : (
-          <main className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <main className="py-8">
             <AdminPanel />
           </main>
         )}
