@@ -18,7 +18,7 @@ import { useAuth } from './hooks/useAuth';
 import { AuthModal } from './components/AuthModal';
 import { UserMenu } from './components/UserMenu';
 import { UserProfile } from './components/UserProfile';
-import AdminPanel from './components/AdminPanel'; // Import par défaut corrigé
+import AdminPanel from './components/AdminPanel';
 
 function App() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -40,7 +40,6 @@ function App() {
       "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible."
     );
     if (confirmed) {
-      // Logique de suppression (API ou localStorage, etc.)
       console.log("Compte supprimé !");
       setCurrentView('home');
     }
@@ -56,7 +55,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Background Image - only on home */}
       {currentView === 'home' && (
         <div className="absolute inset-0 z-0">
           <img
@@ -69,12 +67,10 @@ function App() {
         </div>
       )}
 
-      {/* Content */}
       <div className="relative z-10">
         <header className="border-b border-gray-800/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              {/* Logo + Retour */}
               <div className="flex items-center space-x-4">
                 {(currentView === 'profile' || currentView === 'admin') && (
                   <button
@@ -93,34 +89,17 @@ function App() {
                 )}
               </div>
 
-              {/* Navigation */}
               {currentView !== 'admin' && (
                 <nav className="hidden md:flex items-center space-x-8">
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                    À propos
-                  </a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                    Bibliothèque
-                  </a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                    Blog
-                  </a>
-                  <a
-                    href="#"
-                    className="bg-yellow-400 text-black px-3 py-1 rounded-md font-medium hover:bg-yellow-300 transition-colors"
-                  >
-                    ModFusionPrime
-                  </a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                    Support
-                  </a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                    Servers
-                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">À propos</a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Bibliothèque</a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Blog</a>
+                  <a href="#" className="bg-yellow-400 text-black px-3 py-1 rounded-md font-medium hover:bg-yellow-300 transition-colors">ModFusionPrime</a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Support</a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Servers</a>
                 </nav>
               )}
 
-              {/* Actions à droite */}
               <div className="hidden md:flex items-center space-x-4">
                 {currentView !== 'admin' && (
                   <div className="flex items-center space-x-2 text-gray-300 select-none">
@@ -183,8 +162,7 @@ function App() {
                   AVEC DES MODS
                 </h1>
                 <p className="text-base lg:text-lg text-gray-200 leading-relaxed">
-                  Votre jeu ne sera plus jamais le même grâce aux modifications,
-                  skins, optimisations...
+                  Votre jeu ne sera plus jamais le même grâce aux modifications, skins, optimisations...
                 </p>
               </div>
 
@@ -218,7 +196,6 @@ function App() {
                   <Monitor className="w-5 h-5 mr-2" />
                   Téléchargement gratuit
                 </button>
-                <
                 <button className="inline-flex items-center justify-center px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md">
                   <Play className="w-5 h-5 mr-2" />
                   Voir les mods
@@ -233,7 +210,6 @@ function App() {
         )}
       </div>
 
-      {/* Auth Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
